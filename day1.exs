@@ -4,24 +4,26 @@ defmodule SolutionDay1 do
   end
 
   def solve1(input) do
-    count_elves(input, [], 0) |> Enum.max
+    %{elves: elves} = count_elves2(input)
+    elves |> Enum.max
   end
 
   def solve2(input) do
-    count_elves(input, [], 0) |> Enum.sort(&(&1 >= &2)) |> Enum.take(3) |> Enum.sum
+    %{elves: elves} = count_elves2(input)
+    elves |> Enum.sort(&(&1 >= &2)) |> Enum.take(3) |> Enum.sum
   end
 
-  defp count_elves([], elves, sum) do
-    elves ++ [sum]
+  defp count_elves2(input) do
+    input |> List.foldr(%{sum: 0, elves: []}, &reduce/2)
   end
 
-  defp count_elves(["" | rest], elves, sum) do
-    count_elves(rest, elves ++ [sum], 0)
+  defp reduce("", %{sum: sum, elves: elves}) do
+    %{sum: 0, elves: elves ++ [sum]}
   end
 
-  defp count_elves([val | rest], elves, sum) do
+  defp reduce(val, %{sum: sum, elves: elves}) do
     {int_val, _} = Integer.parse(val)
-    count_elves(rest, elves, sum + int_val)
+    %{sum: sum + int_val, elves: elves}
   end
 end
 
