@@ -11,22 +11,28 @@ defmodule SolutionDay5 do
   end
 
   def solve1({stacks, moves}) do
-    do_moves(stacks, moves)
+    do_moves(stacks, moves, true)
     |> get_tops()
   end
 
-  defp do_moves(stacks, []), do: stacks
-  defp do_moves(stacks, [move | moves]) do
-    do_moves(stacks |> do_move(move), moves)
+  def solve2({stacks, moves}) do
+    do_moves(stacks, moves, false)
+    |> get_tops()
   end
 
-  defp do_move(stack, {move, from, to}) do
+  defp do_moves(stacks, [], _), do: stacks
+  defp do_moves(stacks, [move | moves], reverse) do
+    do_moves(stacks |> do_move(move, reverse), moves, reverse)
+  end
+
+  defp do_move(stack, {move, from, to}, reverse) do
     from_stack = stack |> elem(from - 1)
     to_stack = stack |> elem(to - 1)
     {from_take, from_rem} = Enum.split(from_stack, move)
+    real_from_take = if reverse, do: from_take |> Enum.reverse(), else: from_take
     stack
     |> put_elem(from - 1, from_rem)
-    |> put_elem(to - 1, (from_take |> Enum.reverse()) ++ to_stack)
+    |> put_elem(to - 1, real_from_take ++ to_stack)
   end
 
   defp get_tops(stacks) do
@@ -52,3 +58,4 @@ end
 
 input = SolutionDay5.load_input()
 IO.inspect(SolutionDay5.solve1(input))
+IO.inspect(SolutionDay5.solve2(input))
