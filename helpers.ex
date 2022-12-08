@@ -7,6 +7,10 @@ defmodule Helpers do
     end
   end
 
+  def flip(m) do
+    m |> Enum.map(&(Enum.reverse(&1)))
+  end
+
   def is_empty?([]), do: true
   def is_empty?(_), do: false
 end
