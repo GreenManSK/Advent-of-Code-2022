@@ -12,6 +12,24 @@ defmodule SolutionDay9 do
     MapSet.size(MapSet.new(moves))
   end
 
+  def solve2(input) do
+    moves1 = do_moves(input, {0,0}, {0,0})
+    moves = do_follow_moves(Enum.to_list(2..9), moves1, {0,0})
+    MapSet.size(MapSet.new(moves))
+  end
+
+  defp do_follow_moves([], moves, _), do: moves
+  defp do_follow_moves([round | remaining], head_moves, start) do
+    tail_moves = do_follow(head_moves, start, [])
+    do_follow_moves(remaining, tail_moves, start)
+  end
+
+  defp do_follow([], _, moved), do: moved
+  defp do_follow([head_position | rest_moves], tail, moved) do
+    new_tail = move_tail(head_position, tail)
+    do_follow(rest_moves, new_tail, moved ++ [new_tail])
+  end
+
   defp do_moves([], _, tail), do: [tail]
   defp do_moves([move | rest], head, tail) do
     {new_head, new_tail, moved} = do_move(move, head, tail, [tail])
@@ -64,3 +82,4 @@ end
 
 input = SolutionDay9.load_input()
 IO.inspect(input |> SolutionDay9.solve1())
+IO.inspect(input |> SolutionDay9.solve2())
