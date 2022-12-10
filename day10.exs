@@ -1,5 +1,7 @@
 defmodule SolutionDay10 do
   @solution1_positions [20, 60, 100, 140, 180, 220]
+  @ctr_width 40
+  @ctr_height 6
 
   def load_input() do
     File.stream!("inputs/day10.txt")
@@ -11,6 +13,32 @@ defmodule SolutionDay10 do
   def solve1(input) do
     cycles = input |> Enum.map(&({&1, get_runtime(&1)})) |> run_instructions(1, [])
     @solution1_positions |> Enum.map(&(Enum.at(cycles, &1 - 1) * &1)) |> Enum.sum()
+  end
+
+  def solve2(input) do
+    cycles = input |> Enum.map(&({&1, get_runtime(&1)})) |> run_instructions(1, [])
+    grid = List.flatten(create_grid(@ctr_height, @ctr_width))
+    IO.inspect(cycles)
+    draw_grid(grid, cycles)
+  end
+
+  defp draw_grid([], _), do: nil
+  defp draw_grid([{x, _} | rest_grid], [register | rest_cycles]) do
+    IO.write(if is_in_range(register, x), do: "#", else: ".")
+    if x == @ctr_width do
+      IO.write("\n")
+    end
+    draw_grid(rest_grid, rest_cycles)
+  end
+
+  defp is_in_range(register, cycle_number) do
+    register == cycle_number or register + 2 == cycle_number or register + 1 == cycle_number
+  end
+
+  defp create_grid(height, width) do
+    Enum.map(1..height, fn y ->
+      Enum.map(1..width, fn x -> {x, y} end)
+    end)
   end
 
   def run_instructions([], register, cycles), do: cycles ++ [register]
@@ -34,4 +62,5 @@ defmodule SolutionDay10 do
 end
 
 input = SolutionDay10.load_input()
-IO.inspect(input |> SolutionDay10.solve1(), limit: :infinity)
+IO.puts(input |> SolutionDay10.solve1())
+input |> SolutionDay10.solve2()
