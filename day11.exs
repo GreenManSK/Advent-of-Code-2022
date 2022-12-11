@@ -11,36 +11,49 @@ defmodule SolutionDay11 do
 
   def solve1(monkeys) do
     monkeys_count = tuple_size(monkeys)
-    finished_monkeys = do_n_rounds(20, monkeys_count, monkeys)
-    finished_monkeys
+    finished_monkeys = do_n_rounds(20, monkeys_count, monkeys, fn x -> floor(x / 3) end)
+    power_top(finished_monkeys, 2)
+  end
+
+  def solve2(monkeys) do
+    monkeys_count = tuple_size(monkeys)
+    divisors = monkeys |> Tuple.to_list() |> Enum.map(&(&1 |> elem(3)))
+    greatest_divisor = Enum.reduce(divisors, fn a,b -> a * b end)
+    finished_monkeys = do_n_rounds(10000, monkeys_count, monkeys, fn x -> rem(x, greatest_divisor) end)
+    power_top(finished_monkeys, 2)
+  end
+
+  defp power_top(monkeys, number) do
+    monkeys
     |> Tuple.to_list()
     |> Enum.map(fn x -> x |> elem(6) end)
     |> Enum.sort(&(&1 >= &2))
-    |> Enum.take(2)
+    |> Enum.take(number)
     |> Enum.reduce(fn x, acc -> x * acc end)
   end
 
-  defp do_n_rounds(0, monkeys_count, monkeys), do: monkeys
-  defp do_n_rounds(n, monkeys_count, monkeys) do
-    new_monkeys = do_round(0, monkeys_count, monkeys)
-    do_n_rounds(n - 1, monkeys_count, new_monkeys)
+  defp do_n_rounds(0, _, monkeys, _), do: monkeys
+  defp do_n_rounds(n, monkeys_count, monkeys, reduce_worry) do
+    new_monkeys = do_round(0, monkeys_count, monkeys, reduce_worry)
+    do_n_rounds(n - 1, monkeys_count, new_monkeys, reduce_worry)
   end
 
-  defp do_round(monkey_number, all_monkeys, monkeys) when monkey_number >= all_monkeys, do: monkeys
-  defp do_round(monkey_number, all_monkeys, monkeys) do
+  defp do_round(monkey_number, all_monkeys, monkeys, _) when monkey_number >= all_monkeys, do: monkeys
+  defp do_round(monkey_number, all_monkeys, monkeys, reduce_worry) do
     monkey = monkeys |> elem(monkey_number)
     {_, items, operation, test, true_monkey, false_monkey, inspected} = monkey
 
-    new_monkeys = throw_items(items, operation, test, true_monkey, false_monkey, monkeys)
+    new_monkeys = throw_items(items, operation, test, true_monkey, false_monkey, monkeys, reduce_worry)
 
     updated_monkey = {monkey_number, [], operation, test,  true_monkey, false_monkey, inspected + length(items)}
     updated_monkeys = put_elem(new_monkeys, monkey_number, updated_monkey)
-    do_round(monkey_number + 1, all_monkeys, put_elem(updated_monkeys, monkey_number, updated_monkey))
+    do_round(monkey_number + 1, all_monkeys, put_elem(updated_monkeys, monkey_number, updated_monkey), reduce_worry)
   end
 
-  defp throw_items([], _, _, _, _, monkeys), do: monkeys
-  defp throw_items([item | rest], operation, test, true_monkey, false_monkey, monkeys) do
-    after_inspection = floor(run_operation(item, operation) / 3)
+  defp throw_items([], _, _, _, _, monkeys, _), do: monkeys
+  defp throw_items([item | rest], operation, test, true_monkey, false_monkey, monkeys, reduce_worry) do
+    operation_result = run_operation(item, operation)
+    after_inspection = reduce_worry.(operation_result)
     new_monkey_number = if rem(after_inspection, test) == 0, do: true_monkey, else: false_monkey
     new_monkey = monkeys |> elem(new_monkey_number)
 
@@ -49,7 +62,7 @@ defmodule SolutionDay11 do
     new_monkey_updated = put_elem(new_monkey, 1, new_monkey_items_updated)
 
     new_monkeys = put_elem(monkeys, new_monkey_number, new_monkey_updated)
-    throw_items(rest, operation, test, true_monkey, false_monkey, new_monkeys)
+    throw_items(rest, operation, test, true_monkey, false_monkey, new_monkeys, reduce_worry)
   end
 
   defp run_operation(item, {"+", a, b}), do: operation_member(item, a) + operation_member(item, b)
@@ -85,3 +98,4 @@ end
 
 input = SolutionDay11.load_input()
 SolutionDay11.solve1(input) |> IO.inspect(charlists: :as_lists)
+SolutionDay11.solve2(input) |> IO.inspect(charlists: :as_lists)
