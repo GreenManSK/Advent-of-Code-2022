@@ -12,11 +12,25 @@ defmodule SolutionDay12 do
   def solve1(input) do
     edges = get_edges(input)
     graph = Graph.new |> Graph.add_edges(edges)
-    start_coords = find_node(input, "S")
-    end_coords = find_node(input, "E")
+    [start_coords | _] = find_nodes(input, "S")
+    [end_coords | _] = find_nodes(input, "E")
     path = Graph.dijkstra(graph, start_coords, end_coords)
     path |> Enum.map(&(get_height(input, &1)))
     length(path) - 1
+  end
+
+  def solve2(input) do
+    edges = get_edges(input)
+    graph = Graph.new |> Graph.add_edges(edges)
+
+    a_coords = find_nodes(input, "a")
+    [end_coords | _] = find_nodes(input, "E")
+
+    a_coords
+    |> Enum.map(&Graph.dijkstra(graph, &1, end_coords))
+    |> Enum.filter(&(&1 != nil))
+    |> Enum.map(&(length(&1) - 1))
+    |> Enum.min()
   end
 
   defp get_edges(input) do
@@ -26,12 +40,11 @@ defmodule SolutionDay12 do
     coords_to_edges(input, coords, width, height, [])
   end
 
-  defp find_node(input, node_height) do
+  defp find_nodes(input, node_height) do
     height = tuple_size(input) - 1
     width = tuple_size(elem(input, 0)) - 1
     coords = for x <- 0..width, y <- 0..height, do: {x, y}
-    [end_coords | _] = coords |> Enum.filter(fn coord -> get_height(input, coord) == node_height end)
-    end_coords
+    coords |> Enum.filter(fn coord -> get_height(input, coord) == node_height end)
   end
 
   defp coords_to_edges(_, [], _, _, edges), do: edges
