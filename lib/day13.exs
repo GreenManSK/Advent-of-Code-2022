@@ -55,11 +55,25 @@ defmodule SolutionDay13 do
 
   def solve1(packets) do
     results = packets |> Enum.map(fn {a,b} -> are_in_order?(a,b) end)
-    results_len = length(results)
-    Enum.zip(1..results_len, results)
+    number_results(results)
     |> Enum.filter(fn {_, valid} -> valid == true or valid == :same end)
     |> Enum.map(fn {n, _} -> n end)
     |> Enum.sum()
+  end
+
+  def solve2(packets) do
+    results = packets
+    |> Enum.reduce([[[2]], [[6]]], fn {a,b}, acc -> [a,b | acc] end)
+    |> Enum.sort(&are_in_order?/2)
+    number_results(results)
+    |> Enum.filter(fn {_, list} -> list == [[2]] or list == [[6]] end)
+    |> Enum.map(fn {n, _} -> n end)
+    |> Enum.reduce(fn a, acc -> a * acc end)
+  end
+
+  defp number_results(results) do
+    results_len = length(results)
+    Enum.zip(1..results_len, results)
   end
 
   defp are_in_order?([], []), do: :same
@@ -95,4 +109,5 @@ defmodule SolutionDay13 do
 end
 
 input = SolutionDay13.load_input()
-IO.inspect(SolutionDay13.solve1(input), limit: :infinity)
+IO.inspect(SolutionDay13.solve1(input))
+IO.inspect(SolutionDay13.solve2(input))
