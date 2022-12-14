@@ -17,23 +17,41 @@ defmodule SolutionDay14 do
   def solve1(input) do
     min_max = get_min_max(input)
     board = fill_board(create_board(min_max), input)
-    throw_sand(board, @sand_source, 0)
+    throw_sand(board, 0, &find_sand_fall_point1/2)
   end
 
-  defp throw_sand(board, sand, count) do
-    point = find_sand_fall_point(board, sand)
+  def solve2(input) do
+    min_max = get_min_max(input)
+    {_, {_, max_y}} = min_max
+    board = fill_board(create_board(min_max), input)
+    throw_sand(board, 0, &find_sand_fall_point2(&1, &2, max_y + 2)) + 1
+  end
+
+  defp throw_sand(board, count, find_fall_point) do
+    point = find_fall_point.(board, @sand_source)
     case point do
       :outside -> count
-      _ -> throw_sand(Map.replace!(board, point, "o"), @sand_source, count + 1)
+      @sand_source -> count
+      _ -> throw_sand(Map.update(board, point, "o", fn _ -> "o" end), count + 1, find_fall_point)
     end
   end
 
-  defp find_sand_fall_point(board, sand) do
+  defp find_sand_fall_point1(board, sand) do
     next_point = next_move(board, sand)
     cond do
       next_point == :none -> sand
       not exists?(board, next_point) -> :outside
-      true -> find_sand_fall_point(board, next_point)
+      true -> find_sand_fall_point1(board, next_point)
+    end
+  end
+
+  defp find_sand_fall_point2(board, sand, floor_y) do
+    {_, sand_y} = sand
+    next_point = next_move(board, sand)
+    cond do
+      sand_y + 1 == floor_y -> sand
+      next_point == :none -> sand
+      true -> find_sand_fall_point2(board, next_point, floor_y)
     end
   end
 
@@ -86,3 +104,4 @@ end
 
 input = SolutionDay14.load_input()
 IO.inspect(input |> SolutionDay14.solve1())
+IO.inspect(input |> SolutionDay14.solve2())
