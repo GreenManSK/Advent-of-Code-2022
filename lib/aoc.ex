@@ -5,4 +5,9 @@ defmodule Aoc do
     solution2 = SolutionDay12.solve2(input)
     {solution1, solution2}
   end
+
+  def day16 do
+    input = SolutionDay16.load_input()
+    SolutionDay16.solve1(input)
+  end
 end
