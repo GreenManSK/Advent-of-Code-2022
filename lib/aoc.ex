@@ -8,6 +8,7 @@ defmodule Aoc do
 
   def day16 do
     input = SolutionDay16.load_input()
-    SolutionDay16.solve1(input)
+#    SolutionDay16.solve1(input)
+    SolutionDay16.solve2(input)
   end
 end
